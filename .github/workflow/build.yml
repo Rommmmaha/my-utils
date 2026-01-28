@@ -1,0 +1,45 @@
+name: Nightly Build
+
+on:
+  push:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: write
+
+jobs:
+  update-nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Workspace
+        run: cargo build --release --workspace
+
+      - name: Package Binaries
+        shell: bash
+        run: |
+          mkdir staging
+          BINARY_NAMES=$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[].targets[] | select(.kind[] | contains("bin")) | .name')
+          for bin in $BINARY_NAMES; do
+            cp "target/release/$bin" staging/
+          done
+          tar -czvf linux-tools.tar.gz -C staging .
+
+      - name: Update Nightly Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete nightly --cleanup-tag -y || true
+          gh release create nightly "linux-tools.tar.gz" \
+            --title "Latest Auto-Build" \
+            --notes "$(date)" \
+            --prerelease \
+            --latest
