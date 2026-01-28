@@ -1,0 +1,3 @@
+[workspace]
+resolver = "3"
+members = ["_aidump", "_autostart", "_blank-window", "_multitool", "_netstatus", "_overlay"]
