@@ -21,14 +21,14 @@ fn main() {
                 let hh = secs / 3600;
                 let mm = (secs % 3600) / 60;
                 let ss = secs % 60;
-                println!(" ({:02}:{:02}:{:02})", hh, mm, ss);
+                println!("({:02}:{:02}:{:02})", hh, mm, ss);
             }
             let timestamp = Local::now().format("%H:%M:%S").to_string();
             let output = format!("[{}]", timestamp);
             if is_success {
-                print!("{}", output.green());
+                println!("{} +", output.green());
             } else {
-                print!("{}", output.red());
+                println!("{} -", output.red());
             }
             io::stdout().flush().unwrap();
             last_status = Some(is_success);
